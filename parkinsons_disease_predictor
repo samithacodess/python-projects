@@ -1,41 +1,54 @@
-import csv
+import random
+from sklearn.neighbors import KNeighborsClassifier
 
-# Load the dataset
-diseases = []   # list of (symptom_list, disease_name)
 
-# CHANGE THIS TO YOUR REAL FILE NAME AND PATH
-file_path = "C:/Users/ruhik/Downloads/Healthcare.csv"
+X = []
+y = []
 
-with open(file_path) as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        symptoms = row["Symptoms"].lower().split(",")
-        symptoms = [s.strip() for s in symptoms]
-        disease = row["Disease"]
-        diseases.append((symptoms, disease))
+#Generating 150 symptom values
+for _ in range(150):
+    tremor = random.randint(0, 2)
+    slowness = random.randint(0, 2)
+    stiffness = random.randint(0, 2)
+    voice_change = random.randint(0, 2)
+    balance_issue = random.randint(0, 2)
 
-print("Dataset loaded! Total records:", len(diseases))
-
-# User input
-user_input = input("Enter symptoms separated by commas:\n").lower()
-user_symptoms = [s.strip() for s in user_input.split(",")]
-
-# Matching logic
-best_match = None
-best_score = 0
-
-for sym_list, dis in diseases:
+# labeling
     score = 0
-    for s in user_symptoms:
-        if s in sym_list:
-            score += 1
 
-    if score > best_score:
-        best_score = score
-        best_match = dis
+    if tremor == 2: score += 1
+    if slowness == 2: score += 1
+    if stiffness == 2: score += 1
+    if voice_change == 2: score += 1
+    if balance_issue == 2: score += 1
 
-# Output
-if best_match:
-    print("\nPossible Disease:", best_match)
+# If 2 or more high severity symptoms, then the disease is present
+    label = 1 if score >= 2 else 0
+
+    X.append([tremor, slowness, stiffness, voice_change, balance_issue])
+    y.append(label)
+
+
+
+model = KNeighborsClassifier(n_neighbors=5)
+model.fit(X, y)
+
+
+print("Parkinson's Disease Predictor ")
+print("Enter symptom severity as: 0 = None, 1 = Mild, 2 = High")
+
+tremor = int(input("Tremors: "))
+slowness = int(input("Slowness of movement: "))
+stiffness = int(input("Muscle stiffness: "))
+voice_change = int(input("Voice change: "))
+balance_issue = int(input("Balance issues: "))
+
+
+user_data = [[tremor, slowness, stiffness, voice_change, balance_issue]]
+prediction = model.predict(user_data)
+
+
+if prediction[0] == 1:
+    print("Possible early signs of Parkinson's detected.")
 else:
-    print("\nNo matching disease found.")
+    print("Low risk of Parkinson's symptoms.")
